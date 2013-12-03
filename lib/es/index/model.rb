@@ -42,17 +42,17 @@ module ES
           ES::Index::Client.connection
         end
         
-        def es_index_exists?
-          ES::Index::Client.connection.indices.exists({ index: es_index })
+        def es_index_exists?(options={})
+          ES::Index::Client.connection.indices.exists({ index: (options[:index_name] || es_index) })
         end
 
         #https://github.com/elasticsearch/elasticsearch-ruby/blob/master/elasticsearch-api/lib/elasticsearch/api/actions/indices/create.rb
         #client.indices.delete index: 'foo*'
-        def es_delete_index
-          ES::Index::Client.connection.indices.delete({ index: es_index })
+        def es_delete_index(options={})
+          ES::Index::Client.connection.indices.delete({ index: (options[:index_name] || es_index) })
         end
 
-        def es_create_index
+        def es_create_index(options={})
           es_delete_index if es_index_exists?
           index_req_body = {
             settings: es_settings,
@@ -64,7 +64,7 @@ module ES
             }
           }
           ES::Index::Client.connection.indices.create(
-            index: es_index,
+            index: (options[:index_name] || es_index),
             body: index_req_body
           )
         end

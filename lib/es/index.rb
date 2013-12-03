@@ -1,6 +1,7 @@
 require "es/index/version"
 require "es/index/model"
 require "es/index/config"
+require "es/index/tasks"
 
 module ES
   module Index
