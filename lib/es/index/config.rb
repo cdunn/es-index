@@ -12,7 +12,6 @@ module ES
       option :logger, :default => defined?(Rails)
       # https://github.com/elasticsearch/elasticsearch-ruby/blob/master/elasticsearch-transport/lib/elasticsearch/transport/client.rb
       option :elasticsearch_config
-      option :included_models, :default => []
 
       def default_logger
         defined?(Rails) && Rails.respond_to?(:logger) ? Rails.logger : ::Logger.new($stdout)

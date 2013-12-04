@@ -1,5 +1,6 @@
 require "es/index/version"
 require "es/index/model"
+require "es/index/search_response"
 require "es/index/config"
 require "es/index/tasks"
 

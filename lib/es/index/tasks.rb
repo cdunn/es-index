@@ -1,5 +1,33 @@
 require 'rake'
 
+module ES
+  module Index
+    module Tasks
+      extend self
+      def included_models
+        dir = ENV['DIR'].to_s != '' ? ENV['DIR'] : Rails.root.join("app/models")
+        puts "Loading models from: #{dir}"
+        Dir.glob(File.join("#{dir}/**/*.rb")).each do |path|
+          model_filename = path[/#{Regexp.escape(dir.to_s)}\/([^\.]+).rb/, 1]
+          next if model_filename.match(/^concerns\//i) # Skip concerns/ folder
+          klass = model_filename.camelize.constantize
+
+          begin
+            klass = model_filename.camelize.constantize
+          rescue NameError
+            require(path) ? retry : raise
+          end
+
+          # Skip if the class doesn't have ES::Index integration
+          next unless klass.respond_to?(:es_index_model)
+
+          puts klass
+        end
+      end
+    end
+  end
+end
+
 namespace :es do
   desc 'Create ElasticSearch Index'
   task :create => :environment do
@@ -7,7 +35,7 @@ namespace :es do
     options = {}
     options.merge!(:index_name => ENV['INDEX']) if ENV['INDEX']
     if ENV["CLASS"] == "all"
-      ES::Index::Config.included_models.each do |klass|
+      ES::Index::Tasks.included_models.each do |klass|
         puts "Creating index for #{klass}..."
         begin
           klass.es_create_index(options)
@@ -26,7 +54,7 @@ namespace :es do
     options = {}
     options.merge!(:index_name => ENV['INDEX']) if ENV['INDEX']
     if ENV["CLASS"] == "all"
-      ES::Index::Config.included_models.each do |klass|
+      ES::Index::Tasks.included_models.each do |klass|
         puts "Destroying index for #{klass}..."
         begin
           klass.es_delete_index(options)

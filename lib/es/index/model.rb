@@ -200,6 +200,14 @@ module ES
           end
         end
 
+        def es_search(body={}, options={})
+          SearchResponse.new(ES::Index::Client.connection.search({
+            index: (options[:index_name] || self.es_index),
+            type: (options[:type] || self.es_type),
+            body: body
+          }))
+        end
+
       end # ClassMethods
 
     end
