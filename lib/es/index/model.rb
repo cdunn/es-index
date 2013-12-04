@@ -14,9 +14,9 @@ module ES
           update_es_index
         }
 
-        def update_es_index
+        def update_es_index(options={})
           index_req = {
-            index: self.class.es_index,
+            index: (options[:index_name] || self.class.es_index),
             type: self.class.es_type,
             id: self.class.es_id.call(self),
             body: self.class.to_es_json.call(self),
