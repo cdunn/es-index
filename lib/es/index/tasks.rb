@@ -40,6 +40,7 @@ namespace :es do
   end
 
   # TODO: Parallel scan support
+  # TODO: Add ability to define custom methods for retrieving data to index (ie. using hash + range instead of scan to limit amount of scanning)
   desc "Reindex ElasticSearch"
   task :reindex => :environment do
     raise "expected usage: rake es:reindex CLASS=Service" unless ENV['CLASS']
@@ -47,39 +48,12 @@ namespace :es do
     options.merge!(:index_name => ENV['INDEX']) if ENV['INDEX']
 
     klass = ENV['CLASS'].constantize
-    unless klass.es_index_exists?(options)
-      Rake::Task["es:create"].execute
-    end
+    batch_size = ENV['BATCH']
 
-    # Use 1/4 or read provision
-    read_provision = klass.dynamo_table.table_schema[:provisioned_throughput][:read_capacity_units]
-    raise "read_provision not set for class!" unless read_provision
-    default_batch_size = (klass.read_provision / 2.0).floor
-    batch_size = ENV['BATCH'] || default_batch_size
-    puts "Indexing via scan with batch size of #{batch_size}..."
-
-    # :consumed_capacity
-    scan_idx = 0
-    results_hash = {}
-    while scan_idx == 0 || (results_hash && results_hash[:last_evaluated_key])
-      scan_options = {:batch => batch_size, :manual_batching => true, :return_consumed_capacity => :total}
-      scan_options.merge!(:exclusive_start_key => results_hash[:last_evaluated_key]) if results_hash[:last_evaluated_key]
-      results_hash = klass.scan(scan_options)
-      unless results_hash[:results].blank?
-        puts "Indexing #{results_hash[:results].size} results..."
-        results_hash[:results].each do |r|
-          r.update_es_index(options)
-        end
-      end
-
-      # If more results to scan, sleep to throttle...
-      if results_hash[:last_evaluated_key]
-        # try to keep read usage under 50% of read_provision
-        sleep_time = results_hash[:consumed_capacity][:capacity_units].to_f / (read_provision / 2.0)
-        puts "Sleeping for #{sleep_time}..."
-        sleep(sleep_time)
-      end
-    end
+    klass.es_import({
+      :index_name => ENV["INDEX"],
+      :batch_size => batch_size
+    })
   end
 
 end
