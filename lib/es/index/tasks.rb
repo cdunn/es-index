@@ -7,6 +7,7 @@ module ES
       def included_models
         dir = ENV['DIR'].to_s != '' ? ENV['DIR'] : Rails.root.join("app/models")
         puts "Loading models from: #{dir}"
+        included = []
         Dir.glob(File.join("#{dir}/**/*.rb")).each do |path|
           model_filename = path[/#{Regexp.escape(dir.to_s)}\/([^\.]+).rb/, 1]
           next if model_filename.match(/^concerns\//i) # Skip concerns/ folder
@@ -18,11 +19,12 @@ module ES
             require(path) ? retry : raise
           end
 
-          # Skip if the class doesn't have ES::Index integration
-          next unless klass.respond_to?(:es_index_model)
+          # Skip if the class doesn't have Toy::Dynamo integration
+          next unless klass.respond_to?(:dynamo_table)
 
-          puts klass
+          included << klass
         end
+        included
       end
     end
   end
