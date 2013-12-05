@@ -147,6 +147,15 @@ module ES
           end
         end
 
+        def es_results_to_models(&block)
+          if block
+            @es_results_to_models = block
+          else
+            self.es_index_model
+            @es_results_to_models
+          end
+        end
+
         def to_es_json(&block)
           @to_es_json ||= lambda {|o| { id: o.id } }
           if block
@@ -205,7 +214,15 @@ module ES
             index: (options[:index_name] || self.es_index),
             type: (options[:type] || self.es_type),
             body: body
-          }))
+          }), self)
+        end
+
+        def es_suggest(body={}, options={})
+          SearchResponse.new(ES::Index::Client.connection.suggest({
+            index: (options[:index_name] || self.es_index),
+            type: (options[:type] || self.es_type),
+            body: body
+          }), self)
         end
 
       end # ClassMethods

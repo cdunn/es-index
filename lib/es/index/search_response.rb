@@ -35,9 +35,12 @@ module ES
     class SearchResponse
 
       attr_accessor :raw_response
+      attr_accessor :model
 
-      def initialize(response)
+      def initialize(response, model)
         @raw_response = HashResponse.new(response)
+        @model = model
+        self
       end
 
       def hits
@@ -56,6 +59,10 @@ module ES
         hits.hits
       end
 
+      def models
+        @model.es_results_to_models.call(results)
+      end
+
       def took
         @raw_response.took
       end
@@ -66,6 +73,10 @@ module ES
 
       def shards
         @raw_response._shards
+      end
+
+      def method_missing(method, *args, &block)
+        @raw_response.send(method, *args, &block)
       end
 
     end
