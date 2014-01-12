@@ -198,7 +198,8 @@ module ES
             end
 
             # If more results to scan, sleep to throttle...
-            if results_hash[:last_evaluated_key]
+            #   Local Dynamo is not returning consumed_capacity 2014-01-12
+            if results_hash[:last_evaluated_key] && results_hash[:consumed_capacity]
               # try to keep read usage under 50% of read_provision
               sleep_time = results_hash[:consumed_capacity][:capacity_units].to_f / (read_provision / 2.0)
               puts "Sleeping for #{sleep_time}..."
