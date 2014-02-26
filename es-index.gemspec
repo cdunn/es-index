@@ -8,8 +8,8 @@ Gem::Specification.new do |spec|
   spec.version       = ES::Index::VERSION
   spec.authors       = ["Cary Dunn"]
   spec.email         = ["cary.dunn@gmail.com"]
-  spec.description   = %q{TODO: Write a gem description}
-  spec.summary       = %q{TODO: Write a gem summary}
+  spec.description   = "Elasticsearch + toy-dynamo"
+  spec.summary       = "Elasticsearch + toy-dynamo"
   spec.homepage      = ""
   spec.license       = "MIT"
 
