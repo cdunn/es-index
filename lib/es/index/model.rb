@@ -15,7 +15,7 @@ module ES
         }
 
         def update_es_index(options={})
-          if self.class.es_if.nil? || self.class.es_if.call
+          if self.class.es_if.nil? || self.class.es_if.call(self)
             index_req = {
               index: (options[:index_name] || self.class.es_index),
               type: self.class.es_type,
