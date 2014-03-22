@@ -15,14 +15,16 @@ module ES
         }
 
         def update_es_index(options={})
-          index_req = {
-            index: (options[:index_name] || self.class.es_index),
-            type: self.class.es_type,
-            id: self.class.es_id.call(self),
-            body: self.class.to_es_json.call(self),
-          }
-          index_req.merge!(:ttl => self.class.es_ttl.call(self)) if self.class.es_ttl
-          ES::Index::Client.connection.index(index_req)
+          if self.class.es_if.nil? || self.class.es_if.call
+            index_req = {
+              index: (options[:index_name] || self.class.es_index),
+              type: self.class.es_type,
+              id: self.class.es_id.call(self),
+              body: self.class.to_es_json.call(self),
+            }
+            index_req.merge!(:ttl => self.class.es_ttl.call(self)) if self.class.es_ttl
+            ES::Index::Client.connection.index(index_req)
+          end
         end
       end
 
@@ -134,6 +136,15 @@ module ES
           else
             self.es_index_model
             @es_ttl
+          end
+        end
+
+        def es_if(&block)
+          if block
+            @es_if = block
+          else
+            self.es_index_model
+            @es_if
           end
         end
 
