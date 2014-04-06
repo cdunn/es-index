@@ -1,3 +1,5 @@
+## NOTE: deprecated in favor of dyna_model + elasticsearch::model
+
 Intended to be used with toy-dynamo and dynamodb
 
 # ES::Index
